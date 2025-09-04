@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
-class Carbon(datetime):
+class Moment(datetime):
     WEEKDAYS = {
         "monday": 0,
         "tuesday": 1,
@@ -17,32 +17,32 @@ class Carbon(datetime):
     # --- Static constructors ---
     @staticmethod
     def now(tz=None):
-        return Carbon.from_datetime(datetime.now(tz=ZoneInfo(tz) if tz else None))
+        return Moment.from_datetime(datetime.now(tz=ZoneInfo(tz) if tz else None))
 
     @staticmethod
     def today(tz=None):
-        return Carbon.from_datetime(datetime.now(tz=ZoneInfo(tz) if tz else None).replace(
+        return Moment.from_datetime(datetime.now(tz=ZoneInfo(tz) if tz else None).replace(
             hour=0, minute=0, second=0, microsecond=0
         ))
 
     @staticmethod
     def yesterday(tz=None):
-        return Carbon.today(tz).sub_days(1)
+        return Moment.today(tz).sub_days(1)
 
     @staticmethod
     def tomorrow(tz=None):
-        return Carbon.today(tz).add_days(1)
+        return Moment.today(tz).add_days(1)
 
     @staticmethod
     def parse(date_str, fmt="%Y-%m-%d %H:%M:%S", tz=None):
         dt = datetime.strptime(date_str, fmt)
         if tz:
             dt = dt.replace(tzinfo=ZoneInfo(tz))
-        return Carbon.from_datetime(dt)
+        return Moment.from_datetime(dt)
 
     @staticmethod
     def from_datetime(dt: datetime):
-        return Carbon(
+        return Moment(
             dt.year, dt.month, dt.day,
             dt.hour, dt.minute, dt.second,
             dt.microsecond, dt.tzinfo
@@ -80,10 +80,10 @@ class Carbon(datetime):
 
     # --- Start / End helpers ---
     def start_of_day(self):
-        return Carbon(self.year, self.month, self.day, 0, 0, 0, 0, self.tzinfo)
+        return Moment(self.year, self.month, self.day, 0, 0, 0, 0, self.tzinfo)
 
     def end_of_day(self):
-        return Carbon(self.year, self.month, self.day, 23, 59, 59, 999999, self.tzinfo)
+        return Moment(self.year, self.month, self.day, 23, 59, 59, 999999, self.tzinfo)
 
     def start_of_week(self, week_start="monday"):
         """Return the start of the week (default Monday)."""
@@ -102,20 +102,43 @@ class Carbon(datetime):
         return start.add_days(6).end_of_day()
 
     def start_of_month(self):
-        return Carbon(self.year, self.month, 1, 0, 0, 0, 0, self.tzinfo)
+        return Moment(self.year, self.month, 1, 0, 0, 0, 0, self.tzinfo)
 
     def end_of_month(self):
         if self.month == 12:
-            next_month = Carbon(self.year + 1, 1, 1, tzinfo=self.tzinfo)
+            next_month = Moment(self.year + 1, 1, 1, tzinfo=self.tzinfo)
         else:
-            next_month = Carbon(self.year, self.month + 1, 1, tzinfo=self.tzinfo)
+            next_month = Moment(self.year, self.month + 1, 1, tzinfo=self.tzinfo)
         return next_month.sub_days(1).end_of_day()
 
     def start_of_year(self):
-        return Carbon(self.year, 1, 1, 0, 0, 0, 0, self.tzinfo)
+        return Moment(self.year, 1, 1, 0, 0, 0, 0, self.tzinfo)
 
     def end_of_year(self):
-        return Carbon(self.year, 12, 31, 23, 59, 59, 999999, self.tzinfo)
+        return Moment(self.year, 12, 31, 23, 59, 59, 999999, self.tzinfo)
+
+        # --- Quarter helpers ---
+
+    def start_of_quarter(self):
+        quarter = ((self.month - 1) // 3) + 1
+        start_month = 3 * (quarter - 1) + 1
+        return Moment(self.year, start_month, 1, 0, 0, 0, 0, self.tzinfo)
+
+    def end_of_quarter(self):
+        quarter = ((self.month - 1) // 3) + 1
+        start_month = 3 * (quarter - 1) + 1
+        if start_month + 2 > 12:
+            end_month = 12
+            year = self.year
+        else:
+            end_month = start_month + 2
+            year = self.year
+        # Last day of the month
+        if end_month == 12:
+            last_day = 31
+        else:
+            last_day = (Moment(year, end_month + 1, 1, tzinfo=self.tzinfo) - timedelta(days=1)).day
+        return Moment(year, end_month, last_day, 23, 59, 59, 999999, self.tzinfo)
 
     # --- Relative weekday helpers ---
     def next(self, weekday: str):

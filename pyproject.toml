@@ -3,15 +3,17 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "pycarbon"
-version = "0.1.0"
+name = "momentpy"
+version = "0.1.3"
 description = "A Carbon-like datetime library for Python inspired by Laravel's Carbon"
 authors = [
-    { name = "Your Name", email = "you@example.com" }
+    { name = "Sandesh Satyal", email = "sandeshsatyal@gmail.com" }
 ]
 license = "MIT"
 readme = "README.md"
 requires-python = ">=3.8"
+keywords = ["python", "datetime", "date", "time", "moment", "carbon", "laravel", "timezone", "date manipulation", "human-readable", "pymoment"]
 
 [project.urls]
-Homepage = "https://github.com/yourname/pycarbon"
+Homepage = "https://github.com/sandysh/pycarbon"
+
